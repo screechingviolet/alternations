@@ -1,0 +1,116 @@
+.game-canvas {
+    position: fixed; /* Fix canvas position relative to viewport */
+    top: 0;
+    left: 0;
+    width: 100vw; /* Make canvas full viewport width */
+    height: 100vh; /* Make canvas full viewport height */
+    z-index: -1; /* Place canvas behind other elements */
+}
+
+.player-input {
+	background:transparent;
+    outline:none;
+    border:none;
+    width:100%;
+    font-size:15px;
+    resize: none;
+    padding: 8px;
+    overflow: hidden;
+    font-family: monospace;
+    color: white;
+}
+
+html {
+	background-color: black;
+	color: white;
+}
+
+.player-input-container {
+	display: flex;
+/*	position: fixed;*/
+	/*width: 500px;
+	height: 70px;*/
+	align-items: center;
+	/*top: 60%;
+	left: 50%;*/
+	/*margin-top: -35px; 
+	margin-left: -250px; */
+}
+
+.recent-chat {
+    width:95%;
+    font-size:15px;
+    resize: none;
+    height: 100px;
+    padding: 8px;
+    overflow: hidden;
+    font-family: monospace;
+    
+}
+
+
+.chat-history {
+    width:95%;
+    font-size:15px;
+    resize: none;
+    color: #FFF;
+/*    padding: 8px;*/
+    overflow-y: auto;
+    overflow-x: hidden;
+    overflow-wrap: break-word;
+    font-family: monospace;
+    display: flex;
+  flex-direction: column-reverse;
+      opacity: 0.2;
+      transition: opacity 0.4s ease;
+
+}
+
+.chat-history p {
+    margin: 3px;
+}
+
+.chat-history:hover {
+      opacity: 0.7;
+}
+.chat-history:active {
+      opacity: 0.7;
+}
+
+.chat-history:focus {
+      opacity: 0.7;
+}
+
+.fix { 
+/* Set these properties (top% and left%) based on location? */
+	position: fixed;
+	width: 450px;
+	height: 200px;
+/*	height: 100px;*/
+top: 85%;
+/*	top: 40%;*/
+/*	left: 50%;*/
+left: 80%;
+	display: flex;
+	flex-direction: column; /* Stacks children vertically */
+  	justify-content: flex-end; /* Aligns content to the bottom */
+    margin-top: -100px; 
+    /* Negative half of height. */
+	margin-left: -250px; /* Negative half of width. */
+	/*background-color: rgba(0, 0, 0, 0.3); 
+  	backdrop-filter: blur(10px);
+    box-shadow: 0px 0px 10px 10px rgba(0, 0, 0, 0.3);*/
+}
+
+/*
+    .chat-history::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-history::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.3);
+      border-radius: 4px;
+    }
+    .chat-history::-webkit-scrollbar-thumb:hover {
+      background: rgba(255, 255, 255, 0.5);
+    }
+*/
