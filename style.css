@@ -42,8 +42,23 @@ html {
     font-family: monospace;
     display: flex;
   flex-direction: column-reverse;
-      opacity: 0.2;
-      transition: opacity 0.4s ease;
+
+  /* Base opacity */
+    opacity: 0.6;
+
+    /* Gradient mask */
+    /*-webkit-mask-image: linear-gradient(to bottom, 
+        rgba(0,0,0,0.2), 
+        rgba(0,0,0,1)
+    );
+    mask-image: linear-gradient(to bottom, 
+        rgba(0,0,0,0.2), 
+        rgba(0,0,0,1)
+    );*/
+
+    
+      transition: 
+        opacity 0.4s ease;
 
 }
 
@@ -52,26 +67,60 @@ html {
 }
 
 .chat-history:hover {
-      opacity: 0.7;
+    opacity: 1;
+
 }
-.chat-history:active {
+/*.chat-history:active {
       opacity: 0.7;
 }
 
 .chat-history:focus {
       opacity: 0.7;
-}
+}*/
 
 .fix {
 	position: fixed;
 	width: 450px;
 	height: 200px;
-    top: 85%;
-    left: 80%;
+/*    top: 85%;
+    left: 80%;*/
 	display: flex;
 	flex-direction: column; /* Stacks children vertically */
   	justify-content: flex-end; /* Aligns content to the bottom */
     margin-top: -100px; 
     /* Negative half of height. */
 	margin-left: -250px; /* Negative half of width. */
+}
+
+
+
+/* ============ */
+
+
+body.fade-start {
+  background: black;
+  opacity: 1;
+  transition: opacity 2.5s ease;
+}
+
+body.fade-end {
+  opacity: 1;
+}
+
+#introTitle {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 3rem;
+  font-family: monospace;
+  color: white;
+  opacity: 0;
+  transition: opacity 2.5s ease;
+  pointer-events: none;
+  z-index: 9999;
+}
+
+#introTitle.visible {
+  opacity: 1;
 }

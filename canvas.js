@@ -1,3 +1,14 @@
+class Location {
+  constructor(path, name="", description="You are in a place.") {
+    this.path = path;
+    this.name = name;
+    this.description = description;
+    this.img = new Image(); 
+    this.img.src = this.path;
+    // set offset too
+  }
+}
+
 // ############## CANVAS CONFIG ##############
 
 // DOCUMENT ELEMENTS
@@ -6,21 +17,23 @@ const canvas = document.getElementById('backgroundCanvas');
 
 // LOADED CONTENT 
 
-const img = new Image();
-img.src = 'backgrounds/house.png';
+let location_paths = ['house.jpg', 'brambles_and_candles.jpg', 'computer_garden.jpg', 'crossroads.jpg', 'graveyard.jpg', 'path_into_storm.jpg', 'weeping_willow_garden.jpg', 'white_pond.jpg'];
+let loaded_locations = [];
+for (const path of location_paths) {
+  loaded_locations.push(new Location('backgrounds/' + path));
+}
 
 // UTILS
 
 const ctx = canvas.getContext('2d');
+let current_location = loaded_locations[0];
 
 // FUNCTIONS 
 
-function resizeCanvas() {
-    drawCanvasContent(); 
-}
-
-function resizeCanvasAndDrawImage(img) {
+function resizeCanvasAndDrawBG() {
   // Set canvas dimensions to fill the window
+  let img = current_location.img;
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
@@ -34,22 +47,20 @@ function resizeCanvasAndDrawImage(img) {
   // Calculate position to center the image
   const x = (canvas.width - newWidth) / 2;
   const y = (canvas.height - newHeight) / 2;
-
-  // Draw the image
   ctx.drawImage(img, x, y, newWidth, newHeight);
+
 }
 
-function drawCanvasContent() {
-  // ctx.fillStyle = 'rgba(100, 100, 0, 1)'; // Semi-transparent black background
-  // ctx.fillRect(0, 0, canvas.width, canvas.height);
-  
-  resizeCanvasAndDrawImage(img);
+function changeLocation() {
+  current_location = loaded_locations[3];
+  resizeCanvasAndDrawBG();
+
 }
 
 // LISTENERS & INTERACTION
 
-window.addEventListener('resize', resizeCanvas);
+window.addEventListener('resize', resizeCanvasAndDrawBG);
 
-img.onload = () => {
-  resizeCanvas();
+current_location.img.onload = () => {
+  resizeCanvasAndDrawBG();
 }
