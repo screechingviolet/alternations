@@ -210,7 +210,8 @@ const input = {
         "left": "computer_garden",
         "right": "path_into_storm"
       },
-      "ghosts": ["penny_girl"]
+      "ghosts": ["penny_girl"],
+      "inspectable": ["pond"]
     },
     {
       "name": "light_storm",
@@ -248,8 +249,6 @@ const input = {
     }
 
   ]
-
-  // need to add fountain and shed
 }
 
 const items = ["candle - needs to be snuffed out without setting a fire", 
@@ -271,7 +270,370 @@ let diaryFound = false;
 let item_lookup = {};
 let loaded_locations = {};
 
+let altmaps = [
+{
+  "house": {
+    "forward": "computer_garden",
+    "left": "crossroads",
+    "right": "brambles_and_candles"
+  },
+  "computer_garden": {
+    "backward": "house",
+    "forward": "white_pond",
+    "right": "garden_shed",
+    "up": "fish_pond"
+  },
+  "crossroads": {
+    "right": "house",
+    "forward": "graveyard",
+    "left": "path_into_storm"
+  },
+  "brambles_and_candles": {
+    "left": "house",
+    "forward": "weeping_willow_garden",
+    "right": "dark_forest"
+  },
+  "graveyard": {
+    "backward": "crossroads",
+    "forward": "weeping_willow_garden"
+  },
+  "path_into_storm": {
+    "right": "crossroads",
+    "forward": "light_storm",
+    "left": "white_pond"
+  },
+  "weeping_willow_garden": {
+    "backward": "graveyard",
+    "right": "brambles_and_candles",
+    "forward": "white_pond"
+  },
+  "white_pond": {
+    "backward": "weeping_willow_garden",
+    "left": "computer_garden",
+    "right": "path_into_storm",
+    "down": "fish_pond"
+  },
+  "light_storm": {
+    "backward": "path_into_storm",
+    "left": "white_pond",
+    "right": "fish_pond"
+  },
+  "garden_shed": {
+    "left": "computer_garden",
+    "forward": "fish_pond",
+    "right": "dark_forest"
+  },
+  "fish_pond": {
+    "backward": "garden_shed",
+    "left": "light_storm",
+    "up": "white_pond"
+  },
+  "dark_forest": {
+    "left": "brambles_and_candles",
+    "up": "garden_shed",
+    "right": "graveyard"
+  }
+},
+{
+  "house": {
+    "forward": "crossroads",
+    "left": "garden_shed",
+    "right": "dark_forest"
+  },
+  "crossroads": {
+    "backward": "house",
+    "left": "weeping_willow_garden",
+    "right": "graveyard",
+    "diagonally": "brambles_and_candles"
+  },
+  "garden_shed": {
+    "right": "house",
+    "forward": "computer_garden"
+  },
+  "dark_forest": {
+    "left": "house",
+    "forward": "brambles_and_candles",
+    "down": "fish_pond"
+  },
+  "computer_garden": {
+    "backward": "garden_shed",
+    "forward": "white_pond",
+    "right": "path_into_storm"
+  },
+  "graveyard": {
+    "left": "crossroads",
+    "forward": "brambles_and_candles"
+  },
+  "weeping_willow_garden": {
+    "right": "crossroads",
+    "forward": "white_pond"
+  },
+  "brambles_and_candles": {
+    "backward": "graveyard",
+    "right": "dark_forest",
+    "forward": "light_storm"
+  },
+  "white_pond": {
+    "backward": "weeping_willow_garden",
+    "left": "computer_garden",
+    "right": "fish_pond"
+  },
+  "fish_pond": {
+    "left": "white_pond",
+    "up": "dark_forest",
+    "forward": "light_storm"
+  },
+  "path_into_storm": {
+    "left": "computer_garden",
+    "forward": "light_storm"
+  },
+  "light_storm": {
+    "backward": "path_into_storm",
+    "left": "brambles_and_candles",
+    "right": "path_into_storm"
+  }
+},
+{
+  "house": {
+    "right": "crossroads",
+    "forward": "garden_shed",
+    "left": "white_pond"
+  },
+  "crossroads": {
+    "left": "house",
+    "forward": "path_into_storm",
+    "right": "graveyard",
+    "up": "fish_pond"
+  },
+  "garden_shed": {
+    "backward": "house",
+    "right": "computer_garden",
+    "forward": "fish_pond"
+  },
+  "white_pond": {
+    "right": "house",
+    "forward": "weeping_willow_garden",
+    "diagonally": "path_into_storm"
+  },
+  "computer_garden": {
+    "left": "garden_shed",
+    "forward": "brambles_and_candles"
+  },
+  "graveyard": {
+    "left": "crossroads",
+    "forward": "weeping_willow_garden"
+  },
+  "path_into_storm": {
+    "backward": "crossroads",
+    "forward": "light_storm"
+  },
+  "fish_pond": {
+    "backward": "garden_shed",
+    "left": "light_storm",
+    "right": "weeping_willow_garden"
+  },
+  "brambles_and_candles": {
+    "backward": "computer_garden",
+    "forward": "dark_forest"
+  },
+  "weeping_willow_garden": {
+    "backward": "white_pond",
+    "left": "graveyard",
+    "right": "fish_pond"
+  },
+  "light_storm": {
+    "backward": "path_into_storm",
+    "right": "fish_pond",
+    "left": "dark_forest"
+  },
+  "dark_forest": {
+    "backward": "brambles_and_candles",
+    "up": "graveyard",
+    "right": "light_storm"
+  }
+},
+{
+  "house": {
+    "forward": "brambles_and_candles",
+    "left": "crossroads",
+    "right": "garden_shed"
+  },
+  "brambles_and_candles": {
+    "backward": "house",
+    "forward": "graveyard",
+    "right": "computer_garden"
+  },
+  "crossroads": {
+    "right": "house",
+    "forward": "weeping_willow_garden",
+    "left": "path_into_storm",
+    "diagonally": "white_pond"
+  },
+  "garden_shed": {
+    "left": "house",
+    "forward": "fish_pond"
+  },
+  "graveyard": {
+    "backward": "brambles_and_candles",
+    "forward": "white_pond"
+  },
+  "computer_garden": {
+    "left": "brambles_and_candles",
+    "forward": "white_pond"
+  },
+  "path_into_storm": {
+    "right": "crossroads",
+    "forward": "light_storm"
+  },
+  "weeping_willow_garden": {
+    "backward": "crossroads",
+    "right": "white_pond"
+  },
+  "white_pond": {
+    "backward": "graveyard",
+    "left": "computer_garden",
+    "right": "weeping_willow_garden",
+    "down": "dark_forest"
+  },
+  "fish_pond": {
+    "backward": "garden_shed",
+    "forward": "light_storm"
+  },
+  "light_storm": {
+    "backward": "path_into_storm",
+    "left": "fish_pond",
+    "right": "dark_forest"
+  },
+  "dark_forest": {
+    "up": "white_pond",
+    "left": "light_storm"
+  }
+},
+{
+  "house": {
+    "forward": "weeping_willow_garden",
+    "left": "computer_garden",
+    "right": "garden_shed"
+  },
+  "computer_garden": {
+    "right": "house",
+    "forward": "white_pond",
+    "left": "brambles_and_candles",
+    "diagonally": "fish_pond"
+  },
+  "garden_shed": {
+    "left": "house",
+    "forward": "fish_pond",
+    "right": "path_into_storm"
+  },
+  "weeping_willow_garden": {
+    "backward": "house",
+    "left": "graveyard",
+    "forward": "white_pond"
+  },
+  "brambles_and_candles": {
+    "right": "computer_garden",
+    "forward": "dark_forest"
+  },
+  "graveyard": {
+    "right": "weeping_willow_garden",
+    "forward": "path_into_storm"
+  },
+  "white_pond": {
+    "backward": "weeping_willow_garden",
+    "left": "computer_garden",
+    "right": "fish_pond"
+  },
+  "fish_pond": {
+    "backward": "garden_shed",
+    "left": "white_pond",
+    "forward": "light_storm"
+  },
+  "path_into_storm": {
+    "left": "garden_shed",
+    "backward": "graveyard",
+    "forward": "light_storm"
+  },
+  "light_storm": {
+    "backward": "fish_pond",
+    "left": "path_into_storm",
+    "right": "dark_forest"
+  },
+  "dark_forest": {
+    "backward": "brambles_and_candles",
+    "right": "light_storm",
+    "left": "graveyard",
+    "up": "brambles_and_candles"
+  },
+  "crossroads": {
+    "forward": "graveyard",
+    "right": "garden_shed",
+    "left": "weeping_willow_garden"
+  }
+},
+{
+  "house": {
+    "forward": "graveyard",
+    "left": "weeping_willow_garden",
+    "right": "computer_garden"
+  },
+  "graveyard": {
+    "backward": "house",
+    "right": "brambles_and_candles",
+    "forward": "path_into_storm"
+  },
+  "weeping_willow_garden": {
+    "right": "house",
+    "forward": "white_pond",
+    "diagonally": "fish_pond"
+  },
+  "computer_garden": {
+    "left": "house",
+    "forward": "garden_shed"
+  },
+  "brambles_and_candles": {
+    "left": "graveyard",
+    "forward": "dark_forest"
+  },
+  "path_into_storm": {
+    "backward": "graveyard",
+    "forward": "light_storm",
+    "right": "white_pond"
+  },
+  "white_pond": {
+    "backward": "weeping_willow_garden",
+    "left": "path_into_storm",
+    "forward": "fish_pond"
+  },
+  "garden_shed": {
+    "backward": "computer_garden",
+    "forward": "fish_pond",
+    "up": "dark_forest"
+  },
+  "dark_forest": {
+    "backward": "brambles_and_candles",
+    "right": "fish_pond",
+    "left": "light_storm"
+  },
+  "fish_pond": {
+    "backward": "white_pond",
+    "left": "garden_shed",
+    "forward": "light_storm"
+  },
+  "light_storm": {
+    "backward": "path_into_storm",
+    "left": "fish_pond",
+    "right": "dark_forest"
+  },
+  "crossroads": {
+    "forward": "weeping_willow_garden",
+    "left": "computer_garden",
+    "right": "brambles_and_candles"
+  }
+}];
+let picked_altmap = Math.floor(Math.random() * altmaps.length);
 
+console.log(picked_altmap);
 addLocations(input);
 
 let current_location = loaded_locations["house"];
@@ -374,6 +736,7 @@ function drop(name) {
 // gpt locations
 
 function inspectable(name) {
+  console.log(name);
   switch (name) {
   case "brambles":
     if (diaryFound) return "You peer through the prickly brambles. It looks dim and dank.";
@@ -381,6 +744,9 @@ function inspectable(name) {
     break;
   case "candles": 
     return "The candles burn fiercely. Defiantly? ";
+    break;
+  case "pond": 
+    return "The pond is filled with thick, cloudy murk begging to be displaced. "
     break;
   case "bush":
     if (pennyFound) {
@@ -486,12 +852,14 @@ function addLocations(input) {
     // Prepend 'backgrounds/' if path looks like just a filename
     const fullPath = loc.path.includes('/') ? loc.path : 'backgrounds/' + loc.path;
 
+
     // Create a new Location directly from input object
     const location = new Location(
       fullPath,                   // path
       loc.name || "",             // name
       loc.description || "You are in a place.", // description
-      loc.navigation || {},        // navigation
+      // loc.navigation || {},        // navigation
+      altmaps[picked_altmap][loc.name] || (loc.navigation || {}),
       loc.top || "85%",
       loc.left || "80%",
       loc.items || [],
@@ -552,6 +920,7 @@ function changeLocation(command) {
   let directions = "You feel you could move " + formatList(Object.keys(current_location.navigation)) + ".";
   directions = directions.replace("up", "???");
   directions = directions.replace("diagonally", "???");
+  directions = directions.replace("down", "???");
   return "You move " + command + ". " + current_location.description + " " + items + " " + ghosts + " " + directions;
 
 }
@@ -574,6 +943,7 @@ async function startGame() {
   let directions = "You feel you might be able to move " + formatList(Object.keys(current_location.navigation)) + ".";
   directions = directions.replace("up", "???");
   directions = directions.replace("diagonally", "???");
+  directions = directions.replace("down", "???");
   await typeLine(
     current_location.description +
     " On the ground next to you, there is a letter and an odd, wirey contraption. "
