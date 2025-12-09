@@ -98,6 +98,10 @@ const startButton = document.getElementById("startButton");
 
 // GAME ELEMENTS
 
+let mutation = 1;
+let flickerEnabled = true;
+let flickerTimeout = null;
+
 const global_ghosts = {
   "penny_girl": new Ghost("penny_girl", ["You hear the faint sound of a child laughing as the air seems to warp slightly. ",
 "You hear the faint clinking of metal. Copper? ",
@@ -245,7 +249,7 @@ const input = {
       "navigation": {
         
       },
-      "items": ["flowers"]
+      "items": ["flower"]
     }
 
   ]
@@ -733,7 +737,6 @@ function drop(name) {
 
 // endings
 // convolution and mutation
-// gpt locations
 
 function inspectable(name) {
   console.log(name);
@@ -777,6 +780,7 @@ function use(thing1, thing2) {
     return "You drop the penny into the pond. " + global_ghosts["penny_girl"].peace_response;
   } else if (thing1 == "metatorch" && thing2 == "ghost" && current_location.ghosts.includes("penny_girl") && inventory.includes("metatorch")) {
     current_location.ghosts.splice(current_location.ghosts.indexOf("penny_girl"), 1);
+    mutation += 3;
     return "The metatorch begins to glow with a stronger green light, viscerally bright. A brief, ghostly green flame ignites at its tip, which sparks to a spot in the air as if connected, outlining a young girl in green fire. There is a brief, agonized flash, and she collapses to a single bright point, which leaves afterimages as it fades. The metatorch snuffs itself. ";
   }
   else {
@@ -873,6 +877,73 @@ function addLocations(input) {
   }
 }
 
+function startFlickerLoop() {
+  if (!flickerEnabled) return;
+
+  const intensity = mutation / 10;
+
+  // More mutation = more frequent
+  const minDelay = 2000 - intensity * 1500;
+  const maxDelay = 5000 - intensity * 3500;
+
+  const delay = Math.max(100, Math.random() * (maxDelay - minDelay) + minDelay);
+
+  flickerTimeout = setTimeout(() => {
+    triggerRandomEffect(intensity);
+    startFlickerLoop();
+  }, delay);
+}
+
+function triggerRandomEffect(intensity) {
+  const effects = [];
+
+  // Always available
+  effects.push(brightnessBurst);
+  effects.push(darkDip);
+
+  // Mutation > 3: add shake & static
+  if (intensity > 0.3) {
+    effects.push(shakeEffect);
+    // effects.push(staticNoise);
+  }
+
+  // Mutation > 6: add RGB glitch
+  if (intensity > 0.6) {
+    // effects.push(rgbSplitGlitch);
+  }
+
+  // Choose one randomly
+  const fx = effects[Math.floor(Math.random() * effects.length)];
+  // console.log(fx);
+  fx(intensity);
+}
+
+function brightnessBurst(intensity) {
+  const amount = 1 + intensity * (0.5 + Math.random());
+  canvas.style.filter = `brightness(${amount})`;
+
+  setTimeout(() => canvas.style.filter = "brightness(1)", 80);
+}
+
+function darkDip(intensity) {
+  const amount = 1 - intensity * (0.4 + Math.random() * 0.4);
+  canvas.style.filter = `brightness(${amount})`;
+
+  setTimeout(() => canvas.style.filter = "brightness(1)", 100);
+}
+
+function shakeEffect(intensity) {
+  const shake = 5 + intensity * 20; // pixels
+
+  canvas.style.transform = `translate(${Math.random() * shake}px, ${Math.random() * shake}px)`;
+
+  setTimeout(() => {
+    canvas.style.transform = "translate(0,0)";
+  }, 60);
+}
+
+
+
 function resizeCanvasAndDrawBG() {
   // Set canvas dimensions to fill the window
 
@@ -892,6 +963,9 @@ function resizeCanvasAndDrawBG() {
   const x = (canvas.width - newWidth) / 2;
   const y = (canvas.height - newHeight) / 2;
   ctx.drawImage(img, x, y, newWidth, newHeight);
+
+  clearTimeout(flickerTimeout);
+  startFlickerLoop();
 
 }
 
