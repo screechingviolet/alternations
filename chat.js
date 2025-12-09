@@ -1,115 +1,36 @@
-
-// ############## CHAT SETUP ##############
-
-// DOCUMENT ELEMENTS
-
-const playerTextarea = document.getElementById('player-textarea');
-const chatHistory = document.getElementById('chatHistory');
-
-// UTILS
-
-const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
-
-// FUNCTIONS
-
-function addLine(text) {
-  const newLine = document.createElement('p');
-  newLine.textContent = text;
-  chatHistory.prepend(newLine);
-}
-
-function formatList(arr) {
-  if (arr.length === 0) return "";
-  if (arr.length === 1) return arr[0];
-  if (arr.length === 2) return arr[0] + " and " + arr[1];
-
-  // More than 2
-  return arr.slice(0, -1).join(", ") + ", and " + arr[arr.length - 1];
-}
-
-async function typeLine(text) {
-  const newLine = document.createElement('p');
-  chatHistory.prepend(newLine);
-
-  for (let i = 0; i < text.length; i++) {
-    newLine.textContent += text[i];
-    await delay(20);
-  }
-}
-
-async function runIntroSequence() {
-  document.body.classList.add("fade-start");
-
-  const title = document.getElementById("introTitle");
-
-  // Show title
-  title.classList.add("visible");
-
-  // Wait while title is visible
-  await delay(2000);
-
-  // Fade out title
-  title.classList.remove("visible");
-
-  // Fade in page
-  document.body.classList.remove("fade-start");
-  document.body.classList.add("fade-end");
-
-  await delay(2500);
-}
+// ############## NOTES ##############
 
 // format is a graph
 // Location stores a dictionary mapping "up" "down" etc to name of other location
 // https://www.geeksforgeeks.org/deep-learning/types-of-convolution-kernels/
 // play with convolution of my images and display some of the outputs
 // design items, an item class and randomly assign them to different locations.
+// have a function 'use(item1, (optional)item2)'
+// multiple lookups can correspond tot he nsame thinghh
+// "contraption", "ghost hunter"
+// ai music, modular components, ai interpreted commands, animating between convolved images through fade or flicker
+// flowers in dark_forest
+// flashlight and speakers in computer garden
+// fishing rod and plugpoint in shed
+// rechargeable battery take it from flashlight
+// charge it in the light_storm
 
 
-// LISTENERS & INTERACTION
 
-playerTextarea.addEventListener('keydown', async (e) => {
-  if (e.key === 'Enter') { // or e.keyCode === 13
-    e.preventDefault();
+/* ############## GAME CONFIG ##############
 
-    let temp = playerTextarea.value.split(" ");
-    let command = playerTextarea.value;
-    playerTextarea.value = "";
-    addLine("> " + command);
-    // typeLine("echo: " + playerTextarea.value);
+--- USEFUL UTILS ---
+addLine(text): adds line to chat history w/o typing effect
+async typeLine(text): adds line to chat history w/ typing effect
+formatList(arr): takes an array, formats in human-readable, comma-separated string
+delay(ms): delay for ms milliseconds
 
-    // if (playerTextarea.value == "move") {
-    if (temp[0] == "pick" && temp[1] == "up") {
-      await typeLine(pick_up(temp[2]));
-    } else if (temp[0] == "drop") {
-      await typeLine(drop(temp[1]));
-    } else if (temp[0] == "inventory") {
-      if (inventory.length == 0) await typeLine("You have no items in your inventory.");
-      else await typeLine("Your inventory contains a " + formatList(inventory) + ".");
-    } else if (temp[0] == "help") {
-      await typeLine("Try different commands that might have an effect.")
-      await typeLine("For items: pick up __, inspect ___, use ___ [with ___], drop ___.")
-      await typeLine("For entities: interact with ___, give ___ to ___.")
-      await typeLine("For locations, use keywords such as 'forward', 'backward', 'left', 'right', 'up', ??, ??")
-    } else if (temp[0] == "inspect") {
-      await typeLine(inspect(temp[1]));
-    }
-    else { // change so only accepted possible location change words
-      await typeLine(changeLocation(command));
-    }
-    // }
+*/
 
-    
-
-  }
-});
-
-
-let inventory = []; // stores indices of item
-let pennyFound = false;
-
+// CLASSES
 
 class Location {
-  constructor(path, name, description, navigation, top, left, items, inspectable) {
+  constructor(path, name, description, navigation, top, left, items, inspectable, ghosts) {
     this.path = path;
     this.name = name;
     this.description = description;
@@ -120,97 +41,86 @@ class Location {
     this.left = left;
     this.items = items;
     this.inspectable = inspectable;
-    this.ghosts = [];
+    this.ghosts = ghosts;
     this.filter = "none";
   }
 }
 
 class Ghost {
-  constructor(name, item_name, interact_response, give_response, shoot) {
-
+  constructor(name, presences, interact_response, peace_response, shoot) {
+    this.name = name;
+    this.presences = presences;
+    this.interact_response = interact_response;
+    this.peace_response = peace_response;
   }
 }
-
-// have a function 'use(item1, (optional)item2)'
-
-let item_lookup = {};
 
 class Item {
-  constructor(name, ghost_name, inspect_result) {
-
+  constructor(name, inspect_result) {
+    this.name = name;
+    // this.other_names = other_names;
+    // this.ghost_name = ghost_name;
+    this.inspect_result = inspect_result;
   }
 }
 
-function pick_up(name) {
-  // change to lookup[name].name where internal is concerned
-    if (inventory.includes(name)) {
-      return "You already have this item in your inventory.";
-    } else if (!current_location.items.includes(name)) {
-      return "There is no such thing here...";
-    } else {
-      inventory.push(name);
-      current_location.items.splice(current_location.items.indexOf(name), 1)
-      return "You pick up the " + name + ".";
-    }
-}
+/* 
 
-function drop(name) {
-  if (!inventory.includes(name)) {
-    return "How can you drop an item you don't have?";
-  } else {
-    inventory.splice(inventory.indexOf(name), 1);
-    current_location.items.push(name);
-    return "You drop the " + name + ".";
-    // checks for ghost satisfaction
-  }
-}
-
-function inspectable(name) {
-  switch (name) {
-  case "brambles":
-    return "You peer through the prickly brambles. You can see a tattered diary lying there in the dim light. "
-    break;
-  case "candles": 
-    return "The candles burn fiercely. Defiantly? ";
-    break;
-  case "bush":
-    if (pennyFound) {
-      return "You shake the bush. It reproaches you silently. ";
-    }
-    current_location.items.push("penny");
-    pennyFound = true;
-    return "You shake the bush. A penny spills out and lands on the soft ground. "
-
-    break;
-  }
-}
-
-// multiple lookups can correspond tot he nsame thinghh
-// "contraption", "ghost hunter"
-
-function inspect(name) {
-  if (inventory.includes(name) || current_location.items.includes(name)) {
-    // lookup item and find desc
-  } else if (current_location.inspectable.includes(name)) {
-    return inspectable(name);
-  } else {
-    return "There's no such item here...";
-  }
-}
+"There is a brief flicker in the air. "
+"The air nearby warps slightly. "
+"You catch a hint of a figure out of the corner of your eye. "
+"You see a flickering figure "
 
 
-// ai music, modular components, ai interpreted commands, animating between convolved images through fade or flicker
+PENNY GIRL
 
-// ############## CANVAS CONFIG ##############
+
+FLOWER HUSBAND
+"You hear a faint, low wail. "
+"There's a brief flicker in the air, amidst a lonely silence. "
+"The air warps for a second, and you see the momentary image of an old man holding a bouquet, as if an afterimage printed on your eyelids. "
+
+FISHING ROD FELLOW
+"You hear the bubbling of water and a faint splash. "
+"You hear the creaking sound of a reel being drawn. " ?
+"A splashing sound, a groan of frustration, . "
+
+*/
 
 // DOCUMENT ELEMENTS
 
+const playerTextarea = document.getElementById('player-textarea');
+const chatHistory = document.getElementById('chatHistory');
 const canvas = document.getElementById('backgroundCanvas');
 const textContainer = document.getElementById('fix');
+const ctx = canvas.getContext('2d');
+const startButton = document.getElementById("startButton");
 
+// GAME ELEMENTS
 
-// LOADED CONTENT 
-const possible_filters = ["none", "blur_brighten", "sharpen", "edge_detect"];
+const global_ghosts = {
+  "penny_girl": new Ghost("penny_girl", ["You hear the faint sound of a child laughing as the air seems to warp slightly. ",
+"You hear the faint clinking of metal. Copper? ",
+"You catch the hint of a young figure in the air, outlined in dim light. "],
+"You see a young girl fade into view slightly by the water, translucent and wavering. Her tears fall and splash into nothingness. ",
+"You hear a soft, happy clinking as the young girl fades into view. Her figure shimmers as she watches the penny sink through the water, out of sight. You watch her flicker apart in slow sparkling glints, into a cloud which disperses quickly. A single, tinkling note sounds. "
+)};
+
+const item_map = {
+  "penny": "penny",
+  "coin": "penny", 
+  "rod": "fishing rod",
+  "fishing rod": "fishing rod",
+  "contraption": "metatorch",
+  "metatorch": "metatorch",
+  "letter": "letter"
+}
+
+const item_class_map = {
+  "penny": new Item("penny", "It's a slightly rusted penny."),
+  "letter": new Item("letter", "The letter is crumpled and folded. Unfolding it, you see that some parts have faded out of visibility, but you can make out a few phrases: '...grounds infested with ghosts...' '...unseen levels of mutation...' 'metatorch?'"),
+  "metatorch": new Item("metatorch", "It's a grey metal implement with a dull sheen, sort of like an old torch cast in iron. You feel it pulsing with a gentle green glow.")
+}
 
 const input = {
   "locations": [
@@ -225,7 +135,7 @@ const input = {
       },
       "top": "85%",
       "left": "55%",
-      "items": ["letter", "contraption"]
+      "items": ["letter", "metatorch"]
     },
     {
       "name": "brambles_and_candles",
@@ -268,7 +178,8 @@ const input = {
       "navigation": {
         "right": "crossroads",
         "forward": "weeping_willow_garden"
-      }
+      },
+      "inspectable": ["tombstone"]
     },
     {
       "name": "path_into_storm",
@@ -298,19 +209,48 @@ const input = {
         "backward": "weeping_willow_garden",
         "left": "computer_garden",
         "right": "path_into_storm"
+      },
+      "ghosts": ["penny_girl"]
+    },
+    {
+      "name": "light_storm",
+      "path": "light_storm.jpg",
+      "description": "It is very bright out here.",
+      "navigation": {
+
       }
+    },
+    {
+      "name": "garden_shed",
+      "path": "garden_shed.jpg",
+      "description": "The shed is broken-down, rotted away, but the doorframe still stands and you can make out shapes inside.",
+      "navigation": {
+        
+      },
+      "items": ["fishing rod"]
+    },
+    {
+      "name": "fish_pond",
+      "path": "fish_pond.jpg",
+      "description": "The fish swim around as if in slow motion.",
+      "navigation": {
+        
+      }
+    },
+    {
+      "name": "dark_forest",
+      "path": "dark_forest.jpg",
+      "description": "Are those shadows moving?",
+      "navigation": {
+        
+      },
+      "items": ["flowers"]
     }
 
   ]
 
   // need to add fountain and shed
 }
-
-// flowers in dark_forest
-// flashlight and speakers in computer garden
-// fishing rod and plugpoint in shed
-// rechargeable battery take it from flashlight
-// charge it in the light_storm
 
 const items = ["candle - needs to be snuffed out without setting a fire", 
   "speakers - need to be found in computer garden and made to work again (where is the plugpoint?) to play ghost's favorite music", 
@@ -321,17 +261,219 @@ const items = ["candle - needs to be snuffed out without setting a fire",
   "battery - put into flashlight", 
   "diary - needs to be found in brambles to send teenager ghost to peace"];
 
-const ghosts = [""];
+const possible_filters = ["none", "blur_brighten", "sharpen", "edge_detect"];
 
-// let location_paths = ['house.jpg', 'brambles_and_candles.jpg', 'computer_garden.jpg', 'crossroads.jpg', 'graveyard.jpg', 'path_into_storm.jpg', 'weeping_willow_garden.jpg', 'white_pond.jpg'];
-// let location_names = ['house', 'brambles_and_candles', 'computer_garden', 'crossroads', 'graveyard', 'path_into_storm', 'weeping_willow_garden', 'white_pond'];
+// GLOBAL STATE
+
+let inventory = []; // stores truename of item
+let pennyFound = false;
+let diaryFound = false;
+let item_lookup = {};
 let loaded_locations = {};
-// for (const path of location_paths) {
-//   loaded_locations.push(new Location('backgrounds/' + path));
-// }
+
+
+addLocations(input);
+
+let current_location = loaded_locations["house"];
+
+// UTILS
+
+const delay = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+function addLine(text) {
+  const newLine = document.createElement('p');
+  newLine.textContent = text;
+  chatHistory.prepend(newLine);
+}
+
+function formatList(arr) {
+  if (arr.length === 0) return "";
+  if (arr.length === 1) return arr[0];
+  if (arr.length === 2) return arr[0] + " and " + arr[1];
+
+  // More than 2
+  return arr.slice(0, -1).join(", ") + ", and " + arr[arr.length - 1];
+}
+
+async function typeLine(text) {
+  const newLine = document.createElement('p');
+  chatHistory.prepend(newLine);
+
+  for (let i = 0; i < text.length; i++) {
+    newLine.textContent += text[i];
+    await delay(20);
+  }
+}
+
+let myMusic;
+// credit, w3schools
+function sound(src) {
+    this.sound = document.createElement("audio");
+    this.sound.src = src;
+    this.sound.setAttribute("preload", "auto");
+    this.sound.setAttribute("controls", "none");
+    this.sound.style.display = "none";
+    document.body.appendChild(this.sound);
+    this.play = function(){
+        this.sound.play();
+    }
+    this.stop = function(){
+        this.sound.pause();
+    }    
+}
+
+// FUNCTIONS
+
+async function runIntroSequence() {
+  document.body.classList.add("fade-start");
+
+  const title = document.getElementById("introTitle");
+
+  // Show title
+  title.classList.add("visible");
+
+  // Wait while title is visible
+  await delay(2000);
+
+  // Fade out title
+  title.classList.remove("visible");
+
+  // Fade in page
+  document.body.classList.remove("fade-start");
+  document.body.classList.add("fade-end");
+
+  await delay(2500);
+}
+
+function pick_up(name) {
+  // change to lookup[name].name where internal is concerned
+    if (inventory.includes(item_map[name])) {
+      return "You already have this item in your inventory.";
+    } else if (!current_location.items.includes(item_map[name])) {
+      return "There is no such thing here...";
+    } else {
+      inventory.push(item_map[name]);
+      current_location.items.splice(current_location.items.indexOf(item_map[name]), 1)
+      return "You pick up the " + name + ".";
+    }
+}
+
+function drop(name) {
+  if (!inventory.includes(item_map[name])) {
+    return "How can you drop an item you don't have?";
+  } else {
+    inventory.splice(inventory.indexOf(item_map[name]), 1);
+    current_location.items.push(item_map[name]);
+    return "You drop the " + name + ".";
+    // checks for ghost satisfaction
+  }
+}
+
+// endings
+// convolution and mutation
+// gpt locations
+
+function inspectable(name) {
+  switch (name) {
+  case "brambles":
+    if (diaryFound) return "You peer through the prickly brambles. It looks dim and dank.";
+    else return "You peer through the prickly brambles. You can see a tattered diary lying there in the dim light. "
+    break;
+  case "candles": 
+    return "The candles burn fiercely. Defiantly? ";
+    break;
+  case "bush":
+    if (pennyFound) {
+      return "You shake the bush. It reproaches you silently. ";
+    }
+    current_location.items.push("penny");
+    pennyFound = true;
+    return "You shake the bush. A penny spills out and lands on the soft ground. "
+
+    break;
+  }
+}
+
+function inspect(name) {
+  if (inventory.includes(item_map[name]) || current_location.items.includes(item_map[name])) {
+    // lookup item and find desc
+    return item_class_map[item_map[name]].inspect_result;
+  } else if (current_location.inspectable.includes(name)) {
+    return inspectable(name);
+  } else {
+    return "There's no such item here...";
+  }
+}
+
+function use(thing1, thing2) {
+  if (thing1 == "penny" && thing2 == "pond" && current_location.ghosts.includes("penny_girl") && inventory.includes("penny")) {
+    current_location.ghosts.splice(current_location.ghosts.indexOf("penny_girl"), 1);
+    return "You drop the penny into the pond. " + global_ghosts["penny_girl"].peace_response;
+  } else if (thing1 == "metatorch" && thing2 == "ghost" && current_location.ghosts.includes("penny_girl") && inventory.includes("metatorch")) {
+    current_location.ghosts.splice(current_location.ghosts.indexOf("penny_girl"), 1);
+    return "The metatorch begins to glow with a stronger green light, viscerally bright. A brief, ghostly green flame ignites at its tip, which sparks to a spot in the air as if connected, outlining a young girl in green fire. There is a brief, agonized flash, and she collapses to a single bright point, which leaves afterimages as it fades. The metatorch snuffs itself. ";
+  }
+  else {
+    return "Nothing happens. ";
+  }
+}
+
+// COMMAND HANDLING
+
+playerTextarea.addEventListener('keydown', async (e) => {
+  if (e.key === 'Enter') { // or e.keyCode === 13
+    e.preventDefault();
+
+    let temp = playerTextarea.value.split(" ");
+    let command = playerTextarea.value;
+    playerTextarea.value = "";
+    addLine("> " + command);
+    // typeLine("echo: " + playerTextarea.value);
+
+    if (temp[0] == "pick" && temp[1] == "up") {
+      await typeLine(pick_up(temp[2]));
+    } else if (temp[0] == "drop") {
+      await typeLine(drop(temp[1]));
+    } else if (temp[0] == "inventory") {
+      if (inventory.length == 0) await typeLine("You have no items in your inventory.");
+      else await typeLine("Your inventory contains a " + formatList(inventory) + ".");
+    } else if (temp[0] == "help") {
+      await typeLine("Try different commands that might have an effect.")
+      await typeLine("For items: pick up __, inspect ___, use ___ [with ___], drop ___.")
+      await typeLine("For entities: interact with ___, give ___ to ___.")
+      await typeLine("For locations, use keywords such as 'forward', 'backward', 'left', 'right', 'up', ??, ??")
+    } else if (temp[0] == "inspect") {
+      await typeLine(inspect(temp.slice(1).join(" "))); // change to splice all after
+    } else if (temp[0] == "move") {
+      await typeLine(changeLocation(temp.slice(1).join(" ")));
+    } else if (temp[0] == "interact" && temp[1] == "with") {
+
+    } else if (temp[0] == "give") {
+
+    } else if (temp[0] == "use") {
+      // if rest contains "with"
+      let noWith = true;
+      for (let i = 1; i < temp.length; i++) {
+        if (temp[i] == "with") {
+          await typeLine(use(temp.slice(1, i).join(" "), temp.slice(i+1).join(" ")));
+          noWith = false;
+          break;
+        } 
+      }
+      if (noWith) await typeLine(use(temp.slice(1).join(" "), ""));
+    }
+    else { 
+      await typeLine("The world does not respond. Type 'help' for a list of commands.");
+    }
+
+  }
+});
+
+
+// ############## LOCATION SETUP ##############
+
 
 function addLocations(input) {
-
   if (!input.locations || !Array.isArray(input.locations)) return;
 
   for (const loc of input.locations) {
@@ -353,7 +495,8 @@ function addLocations(input) {
       loc.top || "85%",
       loc.left || "80%",
       loc.items || [],
-      loc.inspectable || []
+      loc.inspectable || [],
+      loc.ghosts || []
 
     );
 
@@ -361,16 +504,6 @@ function addLocations(input) {
     loaded_locations[loc.name] = location;
   }
 }
-
-addLocations(input);
-
-
-// UTILS
-
-const ctx = canvas.getContext('2d');
-let current_location = loaded_locations["house"];
-
-// FUNCTIONS 
 
 function resizeCanvasAndDrawBG() {
   // Set canvas dimensions to fill the window
@@ -410,23 +543,44 @@ function changeLocation(command) {
     items += "There is a " + formatList(current_location.items) + " here. ";
   }
 
-  return "You move " + command + ". " + current_location.description + " " + items;
+  let ghosts = "";
+  if (current_location.ghosts.length > 0) {
+    let temp_presences = global_ghosts[current_location.ghosts[0]].presences;
+    ghosts += temp_presences[Math.floor(Math.random() * (temp_presences.length))];
+  }
 
+  let directions = "You feel you could move " + formatList(Object.keys(current_location.navigation)) + ".";
+  directions = directions.replace("up", "???");
+  directions = directions.replace("diagonally", "???");
+  return "You move " + command + ". " + current_location.description + " " + items + " " + ghosts + " " + directions;
 
 }
 
-// LISTENERS & INTERACTION
-
-window.addEventListener('resize', resizeCanvasAndDrawBG);
-
 current_location.img.onload = async () => {
+  startButton.style.display = "block";
+};
+
+async function startGame() {
+  console.log("pressed");
+  startButton.style.display = "none";   // hide the button
   resizeCanvasAndDrawBG();
+  window.addEventListener('resize', resizeCanvasAndDrawBG);
   textContainer.style.top = current_location.top;
   textContainer.style.left = current_location.left;
   await runIntroSequence();
+  myMusic = new sound("music/Schemawound - You Are Crystal.mp3");
+  myMusic.play();
 
+  let directions = "You feel you might be able to move " + formatList(Object.keys(current_location.navigation)) + ".";
+  directions = directions.replace("up", "???");
+  directions = directions.replace("diagonally", "???");
   await typeLine(
     current_location.description +
-    " On the ground next to you, there is a letter and an odd, wirey contraption."
+    " On the ground next to you, there is a letter and an odd, wirey contraption. "
+    + directions
   );
-};
+}
+
+
+startButton.addEventListener('click', startGame);
+
